@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+          http://www.springframework.org/schema/context
+          http://www.springframework.org/schema/context/spring-context-3.0.xsd
+          http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+          http://www.springframework.org/schema/context
+          http://www.springframework.org/schema/context/spring-context-4.2.xsd
+          http://cxf.apache.org/jaxrs
+          http://cxf.apache.org/schemas/jaxrs.xsd">
+
+    <context:component-scan base-package="ru.remmy"/>
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!-- Configure bean to convert JSON to POJO and vice versa -->
+    <bean id="jsonMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+    </bean>
+
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <ref bean="jsonMessageConverter"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="restService" class="ru.remmy.RestService"></bean>
+    <bean id="jacksonMapper" class="ru.remmy.providers.CustomObjectMapper" ></bean>
+    <bean id="serviceUser" class="ru.remmy.hibernate.services.UserServices" />
+    <bean id="serviceTask" class="ru.remmy.hibernate.services.TaskServices" />
+    <bean id="userDao" class="ru.remmy.hibernate.dao.DAOUser" />
+    <bean id="taskDao" class="ru.remmy.hibernate.dao.DAOTask" />
+
+    <jaxrs:server id="restContainer" address="/">
+        <jaxrs:serviceBeans>
+            <ref bean="restService"/>
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <bean id="cors-filter" class="ru.remmy.providers.CORSFilter" />
+            <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider">
+                <property name="mapper" ref="jacksonMapper" />
+            </bean>
+        </jaxrs:providers>
+    </jaxrs:server>
+</beans>
